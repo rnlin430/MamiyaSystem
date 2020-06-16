@@ -1,0 +1,60 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+version = version
+group = group
+//apply from: 'version.gradle'
+
+def pluginsPath = "G:\\minecraftserver\\Spigot1.15.2\\plugins"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/groups/public'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    maven {
+        url = "https://maven.enginehub.org/repo/"
+    }
+}
+
+task cleanLibs(type: Delete) {
+    println 'cleanLibsTask Start'
+    setDelete file("${buildDir}/libs").listFiles().findAll{it.name.endsWith(".jar")}
+    println 'cleanLibsTask End'
+}
+
+task updateDependency(type: Copy) {
+    println 'updateDependency Start'
+    from "${pluginsPath}"
+    into "lib/"
+    include "*.jar"
+    println 'updateDependency End'
+}
+
+task copyPluginToTestserver(dependsOn: ['build'], type: Copy) {
+    from "${buildDir}/libs"
+    into "${pluginsPath}"
+    include "*" + version + ".jar"
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compileOnly 'org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT'
+    compile 'org.jetbrains:annotations:16.0.2'
+    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.1.0-SNAPSHOT'
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [version: version]
+    }
+}

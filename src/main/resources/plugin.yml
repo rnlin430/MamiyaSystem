@@ -1,0 +1,39 @@
+name: MamiyaSystem
+version: @version@
+main: com.github.rnlin.system.mamiya.MamiyaSystemPlugin
+api-version: 1.15
+depend: [WorldEdit]
+softdepend: [Essentials]
+authors: [rnlin]
+description: Mamiya System
+
+commands:
+  wrc:
+    description: It's main commands of this plugin.
+    aliases: [worldriptidecanceller]
+    usage:
+      /<command>
+      /wrc
+    permisson: worldriptidecanceller.command.wr
+    permission-message: You don't have the permission <permission>.
+  //regen:
+    description: It's regen of this plugin.
+    usage:
+      /<command>
+    permisson: mamiya.system.command.regen
+    permission-message: You don't have the permission <permission>.
+  //undo:
+    description: It's undo of this plugin.
+    usage:
+      /<command>
+    permission: mamiya.system.command.undo
+    permission-message: You don't have the permission <permission>.
+  worldriptidecanceller.command.wrc:
+    description: wrc command
+    default: op
+  worldriptidecanceller.ignoreriptidecancel:
+    description: ignore riptide cancel
+    default: false
+  mamiya.system.command.regen:
+    description: regen command
+    default: op
