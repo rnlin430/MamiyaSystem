@@ -1,16 +1,12 @@
 package com.github.rnlin.system.mamiya;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
@@ -25,13 +21,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 
 public class CommandListener implements CommandExecutor {
 
     private MamiyaSystemPlugin plugin;
     private WorldEditPlugin we;
-    private EditSession editSession;
     private EditSessionManage editSessionManage;
 
     public CommandListener(MamiyaSystemPlugin plugin, WorldEditPlugin we) {
@@ -50,8 +44,8 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
                 return true;
             }
             Player player = (Player) sender;
-System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
-            editSession.undo(editSession);
+//System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
+//            editSession.undo(editSession);
             return true;
         }
 
@@ -148,10 +142,11 @@ System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
             // copy
            BlockArrayClipboard clipboard = copy(region, player, -1);
 
-
             // paste
 //            BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-
+System.out.println(player.getName());
+            EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
+System.out.println(editSession.getWorld().getName());
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)
                     .to(region.getMinimumPoint())

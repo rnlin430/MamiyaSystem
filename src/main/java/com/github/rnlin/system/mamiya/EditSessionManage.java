@@ -3,23 +3,15 @@ package com.github.rnlin.system.mamiya;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
-import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.regions.Region;
-import com.sk89q.worldedit.regions.RegionSelector;
-import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.World;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.security.spec.ECField;
 import java.util.*;
 
 public class EditSessionManage {
@@ -34,22 +26,38 @@ public class EditSessionManage {
         historyManage = this.new HistoryManage();
     }
 
+    /**
+     * 履歴に基づいて過去のEditSessionオブジェクトを返します。
+     * 通常はundo処理時に使用するEditSessionを得たいときに使います。
+     * @param player
+     * @return EditSession Returns {@code null} if
+     */
     @Nullable
-    public EditSession getEditSession(@NotNull Player player) {
+    public EditSession getHistEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
         if (historyManage.getNextEditSession(pn) == null) {
-            creatEditSession(pn);
+            getEditSessionAddHistory(pn);
         }
         return historyManage.getNextEditSession(pn);
     }
 
-    private void creatEditSession(String playerName) {
+    /**
+     * プレイヤーがいるワールドのEditSessionオブジェクトを返します。
+     * EditSession取得を履歴に記録します。
+     * 通常は履歴に残したいpaste処理に使用するEditSessionオブジェクトを得たいときに使用します。
+     * @param playerName プレイヤーID
+     * @return EditSession EditSessionオブジェクトを返します。
+     */
+    @NotNull
+    public EditSession getEditSessionAddHistory(@NotNull String playerName) {
         Player player = Objects.requireNonNull(Bukkit.getPlayer(playerName),
                 playerName + "is offline.\nFailed to create EditSession.");
 
-        LocalSession session = we.getSession(player);
-        com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+//        LocalSession session = we.getSession(player);
+//        com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+//System.out.println("getEditSessionAddHistory presentWorld#Name=" + presentWorld.getName());
+        com.sk89q.worldedit.world.World presentWorld = BukkitAdapter.adapt(player.getWorld());
 //        RegionSelector rs = session.getRegionSelector(presentWorld);
 //
 //        World originWorld = Objects.requireNonNull(Bukkit.getWorld(this.originWorldName),
@@ -92,7 +100,25 @@ public class EditSessionManage {
 //        }
 //        editSession.close();
         historyManage.addEditSessionToHistory(playerName, editSession, presentWorld);
+        EditSession es = Objects.requireNonNull(getEditSession(playerName, presentWorld.getName()));
+        return es;
+    }
 
+    /**
+     * 指定したワールドのEditSessionオブジェクトを返します。
+     * このメソッドでEditSessionオブジェクト取得しても履歴は記録しません。
+     * @param playerName
+     * @param worldName
+     * @return EditSession
+     */
+    @Nullable
+    public EditSession getEditSession(@NotNull String playerName, @NotNull String worldName) {
+        //TODO
+        EditSession editSession = historyManage.getEditSession(playerName, worldName);
+        if (editSession == null) {
+            return null;
+        }
+        return editSession;
     }
 
     private class HistoryManage {
@@ -113,7 +139,7 @@ public class EditSessionManage {
             Objects.requireNonNull(presentWorld, "presentWorld is null");
 
             // if there is no EditSession associated with the player, add EditSession.
-            if (this.editSessionMap.containsKey(playerName)) {
+            if (!this.editSessionMap.containsKey(playerName)) {
                 List<EditSession> editSessionList = new ArrayList<>();
                 editSessionList.add(editSession);
                 this.editSessionMap.put(playerName, editSessionList);
@@ -136,14 +162,25 @@ public class EditSessionManage {
         }
 
         @Nullable
+        private EditSession getEditSession(@NotNull String playerName, @NotNull String worldName) {
+            List<EditSession> el = editSessionMap.get(playerName);
+            for (EditSession i : el) {
+                if (worldName.equals(i.getWorld().getName())) {
+                    return i;
+                }
+            }
+            return null;
+        }
+
+        @Nullable
         private EditSession getNextEditSession(@NotNull String playerName) {
-            String worldname = getNextEditSessionWorldName(playerName);
-            if (worldname == null) {
+            String worldName = getNextEditSessionWorldName(playerName);
+            if (worldName == null) {
                 return null;
             }
             List<EditSession> el = editSessionMap.get(playerName);
             for (EditSession i : el) {
-               if (worldname.equals(i.getWorld().getName())) {
+               if (worldName.equals(i.getWorld().getName())) {
                   return i;
                 }
             }
@@ -153,13 +190,16 @@ public class EditSessionManage {
         @Nullable
         private String getNextEditSessionWorldName(@NotNull String playerName) {
             List<String> history = this.editHist.get(playerName);
+            if (history == null) {
+                return null;
+            }
             int size = history.size();
             if (size <= 0) {
                 return null;
             }
-            String worldname = history.get(size - 1);
+            String worldName = history.get(size - 1);
             history.remove(size - 1);
-            return worldname;
+            return worldName;
         }
             
     }
