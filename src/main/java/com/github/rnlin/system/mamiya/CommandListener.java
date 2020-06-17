@@ -124,28 +124,52 @@ System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
 
             Player player = (Player) sender;
             LocalSession session = we.getSession(player);
-            com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
-            RegionSelector rs = session.getRegionSelector(presentWorld);
 
             World originWorld;
             try {
-                originWorld = Objects.requireNonNull(Bukkit.getWorld(MamiyaSystemPlugin.originWorldName),
-                        "World \"" + MamiyaSystemPlugin.originWorldName + "\" is not found.");
+                originWorld = Objects.requireNonNull(
+                        Bukkit.getWorld(MamiyaSystemPlugin.originWorldName),
+                        "World " + MamiyaSystemPlugin.originWorldName + " is not found."
+                );
             } catch (NullPointerException e) {
+                e.printStackTrace();
                 player.sendMessage(ChatColor.YELLOW + "ワールド \"" + MamiyaSystemPlugin.originWorldName + "\" が見つかりません。");
                 return true;
             }
+
+            com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+            RegionSelector rs = session.getRegionSelector(presentWorld);
 
             // Change RegionSelector from present world to original world.
             session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
 
             Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
-            copy(region, player, -1);
+
+            // copy
+           BlockArrayClipboard clipboard = copy(region, player, -1);
+
+
+            // paste
+//            BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+
+            Operation operation = new ClipboardHolder(clipboard)
+                    .createPaste(editSession)
+                    .to(region.getMinimumPoint())
+                    .copyEntities(true)
+                    // configure here
+                    .build();
+
+            try {
+                Operations.complete(operation);
+            } catch (WorldEditException e) {
+                e.printStackTrace();
+            }
+            editSession.close();
         }
         return true;
     }
 
-    private void copy(Region region, Player player, int maxBlock) {
+    private BlockArrayClipboard copy(Region region, Player player, int maxBlock) {
         com.sk89q.worldedit.world.World world = region.getWorld();
         EditSession editSession = WorldEdit
                 .getInstance()
@@ -166,5 +190,6 @@ System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
             ex.printStackTrace();
         }
 
+        return clipboard;
     }
 }
