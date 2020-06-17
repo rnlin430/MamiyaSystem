@@ -20,18 +20,19 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class EditSessionManage {
 
-    private Map<String, EditSession> editSessionList = new HashMap<>();
     private WorldEditPlugin we;
     private String originWorldName = "origin";
+    private int maxLimitblock = -1;
+    private HistoryManage historyManage;
+
 
     public EditSessionManage(WorldEditPlugin we) {
         this.we = we;
+        historyManage = this.new HistoryManage();
     }
 
     @Nullable
@@ -84,7 +85,7 @@ public class EditSessionManage {
 //            ex.printStackTrace();
 //        }
 //
-        editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(presentWorld, -1);
+        EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(presentWorld, maxLimitblock);
 //        Operation operation = new ClipboardHolder(clipboard)
 //                .createPaste(editSession)
 //                .to(region2.getMinimumPoint())
@@ -98,7 +99,58 @@ public class EditSessionManage {
 //            e.printStackTrace();
 //        }
 //        editSession.close();
-        this.editSessionList.put(playerName, )
+        historyManage.addEditSessionToHistory(playerName, editSession, presentWorld);
 
     }
+
+    private class HistoryManage {
+
+        // Connects(Manage) the EditSession instance of each world of the player.
+        private Map<String, List<EditSession>> editSessionMap = new HashMap<>();
+
+        // Save edit history for all world.
+        private Map<String, List<String>> editHist = new HashMap<>();
+
+        private void addEditSessionToHistory(
+                @NotNull String playerName,
+                @NotNull EditSession editSession,
+                @NotNull com.sk89q.worldedit.world.World presentWorld
+        ) {
+            Objects.requireNonNull(playerName, "playerName is null");
+            Objects.requireNonNull(editSession, "editSession is null");
+            Objects.requireNonNull(presentWorld, "presentWorld is null");
+
+            // if there is no EditSession associated with the player, add EditSession.
+            if (this.editSessionMap.containsKey(playerName)) {
+                List<EditSession> editSessionList = new ArrayList<>();
+                editSessionList.add(editSession);
+                this.editSessionMap.put(playerName, editSessionList);
+            } else {
+                List<EditSession> editSessionList = this.editSessionMap.get(playerName);
+                if (!editSessionList.contains(editSession)) {
+                    editSessionList.add(editSession);
+                }
+            }
+
+            // add edit history
+            if (this.editHist.containsKey(playerName)) {
+                List history = editHist.get(playerName);
+                history.add(presentWorld.getName());
+            } else {
+                List<String> history = new ArrayList<>();
+                history.add(presentWorld.getName());
+                editHist.put(playerName, history);
+            }
+        }
+        
+        private EditSession getNextEditSession(String PlayerName) {
+            
+        }
+        
+        private String getNextEditSessionWorldName(String PlayerName) {
+            
+        }
+            
+    }
+
 }
