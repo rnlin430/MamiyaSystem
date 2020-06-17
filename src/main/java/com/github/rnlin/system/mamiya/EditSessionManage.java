@@ -39,10 +39,11 @@ public class EditSessionManage {
     public EditSession getEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
-        if (!this.editSessionList.containsKey(pn)) {
-            creatEditSession(pn);
-        }
-        return this.editSessionList.get(pn);
+        return historyManage.getNextEditSession(pn);
+//        if (!this.editSessionList.containsKey(pn)) {
+//            creatEditSession(pn);
+//        }
+//        return this.editSessionList.get(pn);
     }
 
     private void creatEditSession(String playerName) {
@@ -142,13 +143,31 @@ public class EditSessionManage {
                 editHist.put(playerName, history);
             }
         }
-        
-        private EditSession getNextEditSession(String PlayerName) {
-            
+
+        @Nullable
+        private EditSession getNextEditSession(@NotNull String playerName) {
+            String worldname = getNextEditSessionWorldName(playerName);
+            if (worldname == null) {
+                return null;
+            }
+            List<EditSession> el = editSessionMap.get(playerName);
+            for (EditSession i : el) {
+               if (worldname.equals(i.getWorld().getName())) {
+                  return i;
+                }
+            }
+            return null;
         }
-        
-        private String getNextEditSessionWorldName(String PlayerName) {
-            
+
+        @Nullable
+        private String getNextEditSessionWorldName(@NotNull String playerName) {
+            List<String> history = this.editHist.get(playerName);
+            int size = history.size();
+            if (size <= 0) {
+                return null;
+            }
+            String worldname = history.get(size - 1);
+            return worldname;
         }
             
     }
