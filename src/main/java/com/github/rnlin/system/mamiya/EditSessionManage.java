@@ -25,7 +25,6 @@ import java.util.*;
 public class EditSessionManage {
 
     private WorldEditPlugin we;
-    private String originWorldName = "origin";
     private int maxLimitblock = -1;
     private HistoryManage historyManage;
 
@@ -39,21 +38,13 @@ public class EditSessionManage {
     public EditSession getEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
+        if (historyManage.getNextEditSession(pn) == null) {
+            creatEditSession(pn);
+        }
         return historyManage.getNextEditSession(pn);
-//        if (!this.editSessionList.containsKey(pn)) {
-//            creatEditSession(pn);
-//        }
-//        return this.editSessionList.get(pn);
     }
 
     private void creatEditSession(String playerName) {
-        if (editSessionList.containsKey(playerName)) {
-            try {
-                throw new Exception("This editSession already exists.");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
         Player player = Objects.requireNonNull(Bukkit.getPlayer(playerName),
                 playerName + "is offline.\nFailed to create EditSession.");
 
@@ -167,6 +158,7 @@ public class EditSessionManage {
                 return null;
             }
             String worldname = history.get(size - 1);
+            history.remove(size - 1);
             return worldname;
         }
             

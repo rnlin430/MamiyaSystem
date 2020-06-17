@@ -33,7 +33,9 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     private static HashMap<Player, Integer> bukkitIdManager = new HashMap<>();
     private BukkitTask bukkitTask = null;
 
-    private static String[] COMMANDS = {"//regen", "//undo"};
+    protected static String originWorldName = "origin";
+
+    public static String[] COMMANDS = {"//regen", "//undo"};
     private WorldEditPlugin worldEdit = null;
 
     @Override
