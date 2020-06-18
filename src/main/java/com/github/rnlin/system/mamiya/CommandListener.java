@@ -28,7 +28,7 @@ public class CommandListener implements CommandExecutor {
     private WorldEditPlugin we;
     private EditSessionManage editSessionManage;
 
-    public CommandListener(MamiyaSystemPlugin plugin, WorldEditPlugin we) {
+    public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
        this.plugin = plugin;
        this.we = we;
        this.editSessionManage = new EditSessionManage(we);
@@ -44,8 +44,12 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
                 return true;
             }
             Player player = (Player) sender;
-//System.out.println("editSession#MinimumPoint=" + this.editSession.toString());
-//            editSession.undo(editSession);
+            EditSession es = editSessionManage.getHistEditSession(player);
+            if (es == null) {
+System.out.println("es=" + es);
+                return true;
+            }
+            es.undo(es);
             return true;
         }
 

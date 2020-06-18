@@ -1,5 +1,5 @@
 # update_frequency: 40(tick)
-enable: true
+enable: false
 tps_threshold: 17
 update_frequency: 1200
 start_message: "§l§nStart message"

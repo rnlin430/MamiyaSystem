@@ -36,10 +36,12 @@ public class EditSessionManage {
     public EditSession getHistEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
-        if (historyManage.getNextEditSession(pn) == null) {
+        EditSession editSession = historyManage.getNextEditSession(pn);
+        if (editSession == null) {
             getEditSessionAddHistory(pn);
         }
-        return historyManage.getNextEditSession(pn);
+System.out.println("getHistEditSession editSession=" + editSession);
+        return editSession;
     }
 
     /**
@@ -113,7 +115,6 @@ public class EditSessionManage {
      */
     @Nullable
     public EditSession getEditSession(@NotNull String playerName, @NotNull String worldName) {
-        //TODO
         EditSession editSession = historyManage.getEditSession(playerName, worldName);
         if (editSession == null) {
             return null;
