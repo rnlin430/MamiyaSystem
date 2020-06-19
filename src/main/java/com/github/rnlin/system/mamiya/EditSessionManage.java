@@ -16,12 +16,15 @@ public class EditSessionManage {
 
     private WorldEditPlugin we;
     private int maxLimitblock = -1;
-    private HistoryManage historyManage;
+    // Index number to undo
+    private Map<String, Integer> historyPointer = new HashMap<>();
+    private Map<String, List<EditSession>> history = new HashMap<>();
+//    private HistoryManage historyManage;
 
 
     public EditSessionManage(WorldEditPlugin we) {
         this.we = we;
-        historyManage = this.new HistoryManage();
+//        historyManage = this.new HistoryManage();
     }
 
     /**
@@ -99,9 +102,22 @@ System.out.println("getHistEditSession editSession=" + editSession);
 //            e.printStackTrace();
 //        }
 //        editSession.close();
-        historyManage.addEditSessionToHistory(playerName, editSession, presentWorld);
-        EditSession es = Objects.requireNonNull(getEditSession(playerName));
-        return es;
+
+        // historyPointer count up
+        if (this.historyPointer.containsKey(playerName)) {
+            Integer a = this.historyPointer.get(playerName);
+            a++;
+        } else {
+            this.historyPointer.put(playerName, 0);
+        }
+
+        // history
+        if (this.history.containsKey(playerName)) {
+            this.history.get(playerName).add(editSession);
+        } else {
+            this.history.put(playerName, new ArrayList<EditSession>(Arrays.asList(editSession)));
+        }
+        return editSession;
     }
 
     @Nullable
