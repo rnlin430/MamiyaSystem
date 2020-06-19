@@ -20,6 +20,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class CommandListener implements CommandExecutor {
@@ -27,6 +29,8 @@ public class CommandListener implements CommandExecutor {
     private MamiyaSystemPlugin plugin;
     private WorldEditPlugin we;
     private EditSessionManage editSessionManage;
+//    private List<EditSession> editSessionNew = new ArrayList<>();
+
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
        this.plugin = plugin;
@@ -43,13 +47,25 @@ public class CommandListener implements CommandExecutor {
 sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
                 return true;
             }
+//            // debug
+//            if (args.length > 0) {
+//                int number = Integer.parseInt(args[0]);
+//                EditSession editSession = this.editSessionNew.get(number);
+//                editSession.undo(editSession);
+//                return true;
+//            }
             Player player = (Player) sender;
             EditSession es = editSessionManage.getHistEditSession(player);
             if (es == null) {
-System.out.println("es=" + es);
-                return true;
+                sender.sendMessage(ChatColor.RED + "ヒストリーがありません。通常の//undoコマンドをお試しください。");
             }
-            es.undo(es);
+            try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
+                    .getEditSession(es.getWorld(), -1)) {
+                es.undo(newEditSession);
+            }
+            WorldEdit worldEdit = we.getWorldEdit();
+            worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
+//            es.undo(es);
             return true;
         }
 
@@ -61,51 +77,44 @@ System.out.println("es=" + es);
                 return true;
             }
 
-            // debug
+//            // debug
 //            if (args.length > 0) {
+//
 //                Player player = (Player) sender;
 //                LocalSession session = we.getSession(player);
-////                EditSession editSession = session.createEditSession(we.wrapPlayer(player));
-////                ClipboardHolder holder = null;
-////                try {
-////                    holder = session.getClipboard();
-////                } catch (EmptyClipboardException e1) {
-////                    e1.printStackTrace();
-////                }
-////                Clipboard clipboard = holder.getClipboard();
-////                Region r = clipboard.getRegion();
-////                plugin.getServer().broadcastMessage("Clipboard#Region#World#getName()=" + r.getWorld().getName());
-//                com.sk89q.worldedit.world.World world = session.getSelectionWorld();
-//sender.sendMessage("LocalSession#getSelectionWorld()=" + world.getName());
+//                com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+//                System.out.println("getEditSessionAddHistory presentWorld#Name=" + presentWorld.getName());
+////                com.sk89q.worldedit.world.World presentWorld = BukkitAdapter.adapt(player.getWorld());
+//                RegionSelector rs = session.getRegionSelector(presentWorld);
 //
-//                World origin = Bukkit.getWorld("origin");
-//                RegionSelector rs = session.getRegionSelector(world);
-//                session.setRegionSelector(BukkitAdapter.adapt(origin), rs);
-//                com.sk89q.worldedit.world.World changedWorld = session.getSelectionWorld();
-//sender.sendMessage("changedWorld=" + changedWorld.getName());
+//                World originWorld = Objects.requireNonNull(Bukkit.getWorld("origin"),
+//                        "origin" + " is not found.");
+//                session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
 //
-//                Region region = session.getRegionSelector(BukkitAdapter.adapt(origin)).getIncompleteRegion();
-//                int volume = region.getWidth() * region.getHeight() * region.getLength();
-//plugin.getServer().broadcastMessage("volume=" + volume);
+//                Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
 //
-//                CuboidRegion region2 = new CuboidRegion(BukkitAdapter.adapt(origin), region.getMinimumPoint(), region.getMaximumPoint());
+//                EditSession editSession = WorldEdit
+//                        .getInstance()
+//                        .getEditSessionFactory()
+//                        .getEditSession(BukkitAdapter.adapt(originWorld), -1);
+//
+//                CuboidRegion region2 = new CuboidRegion(BukkitAdapter.adapt(originWorld), region.getMinimumPoint(), region.getMaximumPoint());
 //                BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 //
-//                editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(BukkitAdapter.adapt(origin), -1);
 //                ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
 //                        editSession, region2, clipboard, region2.getMinimumPoint()
 //                );
 //                // configure here
 //                try {
 //                    Operations.complete(forwardExtentCopy);
-//                    forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(sender)::print);
+//                    forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(player)::print);
 //                } catch (WorldEditException ex) {
 //                    ex.printStackTrace();
 //                }
-//
-//                editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1);
+//                EditSession editSessionNew = WorldEdit.getInstance().getEditSessionFactory().getEditSession(presentWorld, -1);
+//                this.editSessionNew.add(editSessionNew);
 //                Operation operation = new ClipboardHolder(clipboard)
-//                        .createPaste(editSession)
+//                        .createPaste(editSessionNew)
 //                        .to(region2.getMinimumPoint())
 //                        .copyEntities(true)
 //                        // configure here
@@ -116,8 +125,8 @@ System.out.println("es=" + es);
 //                } catch (WorldEditException e) {
 //                    e.printStackTrace();
 //                }
-//                editSession.close();
-//                return true;
+//                editSessionNew.close();
+//               return true;
 //            }
 
             Player player = (Player) sender;
@@ -148,16 +157,13 @@ System.out.println("es=" + es);
 
             // paste
 //            BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-System.out.println(player.getName());
             EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
-System.out.println(editSession.getWorld().getName());
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)
                     .to(region.getMinimumPoint())
                     .copyEntities(true)
                     // configure here
                     .build();
-
             try {
                 Operations.complete(operation);
             } catch (WorldEditException e) {

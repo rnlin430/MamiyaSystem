@@ -1,17 +1,15 @@
 package com.github.rnlin.system.mamiya;
 
 import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.world.World;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.security.spec.ECField;
 import java.util.*;
 
 public class EditSessionManage {
@@ -102,8 +100,14 @@ System.out.println("getHistEditSession editSession=" + editSession);
 //        }
 //        editSession.close();
         historyManage.addEditSessionToHistory(playerName, editSession, presentWorld);
-        EditSession es = Objects.requireNonNull(getEditSession(playerName, presentWorld.getName()));
+        EditSession es = Objects.requireNonNull(getEditSession(playerName));
         return es;
+    }
+
+    @Nullable
+    public EditSession getEditSession(@NotNull String playerName) {
+        List<EditSession> esList = historyManage.getEditSessions(playerName);
+        return esList.get(esList.size() - 1);
     }
 
     /**
@@ -114,21 +118,23 @@ System.out.println("getHistEditSession editSession=" + editSession);
      * @return EditSession
      */
     @Nullable
-    public EditSession getEditSession(@NotNull String playerName, @NotNull String worldName) {
-        EditSession editSession = historyManage.getEditSession(playerName, worldName);
-        if (editSession == null) {
+    public EditSession getEditSessionOfWorld(@NotNull String playerName, @NotNull String worldName) {
+        List<EditSession> editSessionList = historyManage.getEditSessionsOfWorld(playerName, worldName);
+        if (editSessionList == null) {
             return null;
         }
+        EditSession editSession = editSessionList.get(editSessionList.size() - 1);
         return editSession;
     }
 
     private class HistoryManage {
 
         // Connects(Manage) the EditSession instance of each world of the player.
-        private Map<String, List<EditSession>> editSessionMap = new HashMap<>();
+        private final Map<String, List<EditSession>> editSessionMap = new HashMap<>();
 
         // Save edit history for all world.
-        private Map<String, List<String>> editHist = new HashMap<>();
+        private final Map<String, List<String>> editHist = new HashMap<>();
+
 
         private void addEditSessionToHistory(
                 @NotNull String playerName,
@@ -141,14 +147,15 @@ System.out.println("getHistEditSession editSession=" + editSession);
 
             // if there is no EditSession associated with the player, add EditSession.
             if (!this.editSessionMap.containsKey(playerName)) {
+System.out.println("addEditSessionToHistory#if(!this...)");
                 List<EditSession> editSessionList = new ArrayList<>();
                 editSessionList.add(editSession);
                 this.editSessionMap.put(playerName, editSessionList);
             } else {
+System.out.println("addEditSessionToHistory#else");
                 List<EditSession> editSessionList = this.editSessionMap.get(playerName);
-                if (!editSessionList.contains(editSession)) {
-                    editSessionList.add(editSession);
-                }
+System.out.println("editSessionList.size()=" + editSessionList.size());
+                editSessionList.add(editSession);
             }
 
             // add edit history
@@ -163,29 +170,38 @@ System.out.println("getHistEditSession editSession=" + editSession);
         }
 
         @Nullable
-        private EditSession getEditSession(@NotNull String playerName, @NotNull String worldName) {
+        private List<EditSession> getEditSessionsOfWorld(@NotNull String playerName, @NotNull String worldName) {
             List<EditSession> el = editSessionMap.get(playerName);
+            List<EditSession> editSessionList = new ArrayList<>();
             for (EditSession i : el) {
                 if (worldName.equals(i.getWorld().getName())) {
-                    return i;
+                    editSessionList.add(i);
                 }
+                return editSessionList;
             }
             return null;
         }
 
         @Nullable
+        private List<EditSession> getEditSessions(@NotNull String playerName) {
+            return editSessionMap.get(playerName);
+        }
+
+        @Nullable
         private EditSession getNextEditSession(@NotNull String playerName) {
             String worldName = getNextEditSessionWorldName(playerName);
-            if (worldName == null) {
+            int historyIndex = editHist.size();
+            if (worldName == null || historyIndex == 0) {
                 return null;
             }
             List<EditSession> el = editSessionMap.get(playerName);
-            for (EditSession i : el) {
-               if (worldName.equals(i.getWorld().getName())) {
-                  return i;
-                }
-            }
-            return null;
+            EditSession i = el.get(historyIndex - 1);
+           if (worldName.equals(i.getWorld().getName())) {
+              return i;
+           } else {
+               Bukkit.getPlayer(playerName).sendMessage(ChatColor.YELLOW + "editHistとワールド名の不一致が起きました。");
+               return null;
+           }
         }
 
         @Nullable
