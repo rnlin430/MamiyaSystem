@@ -37,7 +37,10 @@ public class EditSessionManage {
     public EditSession getHistEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
-        EditSession editSession = Objects.requireNonNull(history.get(pn).get(historyPointer.get(pn)));
+        Integer pointer = historyPointer.get(pn);
+        if (pointer <= -1)  return null;
+        EditSession editSession = Objects.requireNonNull(history.get(pn).get(pointer));
+        historyPointer.put(pn, --pointer);
         return editSession;
     }
 
@@ -120,7 +123,9 @@ public class EditSessionManage {
         // historyPointer count up
         if (this.historyPointer.containsKey(playerName)) {
             Integer a = this.historyPointer.get(playerName);
-            a++;
+            System.out.println("Befor" + a);
+            this.historyPointer.put(playerName, ++a);
+            System.out.println("After" + this.historyPointer.get(playerName));
         } else {
             this.historyPointer.put(playerName, 0);
         }
