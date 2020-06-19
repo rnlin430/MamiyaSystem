@@ -29,6 +29,7 @@ public class CommandListener implements CommandExecutor {
     private MamiyaSystemPlugin plugin;
     private WorldEditPlugin we;
     private EditSessionManage editSessionManage;
+    private boolean copyEntities = true;
 //    private List<EditSession> editSessionNew = new ArrayList<>();
 
 
@@ -65,7 +66,6 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
             }
             WorldEdit worldEdit = we.getWorldEdit();
             worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
-//            es.undo(es);
             return true;
         }
 
@@ -161,7 +161,7 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)
                     .to(region.getMinimumPoint())
-                    .copyEntities(true)
+                    .copyEntities(copyEntities)
                     // configure here
                     .build();
             try {
@@ -186,8 +186,8 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
         ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
                 editSession, cuboidRegion, clipboard, cuboidRegion.getMinimumPoint()
         );
-        // configure here
-
+        // configure
+        forwardExtentCopy.setCopyingEntities(copyEntities);
         try {
             Operations.complete(forwardExtentCopy);
             forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(player)::print);
