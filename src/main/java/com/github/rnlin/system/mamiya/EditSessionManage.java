@@ -41,6 +41,24 @@ public class EditSessionManage {
         return editSession;
     }
 
+    public boolean isUndo(@NotNull String playerName) {
+        if (-1 >= historyPointer.get(playerName) || !historyPointer.containsKey(playerName)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean isRedo(@NotNull String playerName) {
+        int historySize = history.get(playerName).size();
+        if (historySize < 1) return false;
+        if (historySize - 1 <= historyPointer.get(playerName)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     /**
      * プレイヤーがいるワールドのEditSessionオブジェクトを返します。
      * EditSession取得を履歴に記録します。
