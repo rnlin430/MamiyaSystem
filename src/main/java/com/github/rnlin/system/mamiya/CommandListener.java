@@ -30,6 +30,8 @@ public class CommandListener implements CommandExecutor {
     private WorldEditPlugin we;
     private EditSessionManage editSessionManage;
     private boolean copyEntities = true;
+    private final String NO_UNDO_MESSAGE = "ヒストリーがありません。";
+    private final String NO_REDO_MESSAGE = "ヒストリーがありません。";
 //    private List<EditSession> editSessionNew = new ArrayList<>();
 
 
@@ -48,24 +50,12 @@ public class CommandListener implements CommandExecutor {
 sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
                 return true;
             }
-//            // debug
-//            if (args.length > 0) {
-//                int number = Integer.parseInt(args[0]);
-//                EditSession editSession = this.editSessionNew.get(number);
-//                editSession.undo(editSession);
-//                return true;
-//            }
             Player player = (Player) sender;
-            EditSession es = editSessionManage.getHistEditSession(player);
-            if (es == null) {
-                sender.sendMessage(ChatColor.RED + "ヒストリーがありません。通常の//undoコマンドをお試しください。");
+            if (!editSessionManage.isUndo(player.getName())) {
+                undo(player);
+            } else {
+                sender.sendMessage(ChatColor.RED + NO_UNDO_MESSAGE);
             }
-            try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
-                    .getEditSession(es.getWorld(), -1)) {
-                es.undo(newEditSession);
-            }
-            WorldEdit worldEdit = we.getWorldEdit();
-            worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
             return true;
         }
 
@@ -170,6 +160,7 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
                 e.printStackTrace();
             }
             editSession.close();
+            session.setRegionSelector(BukkitAdapter.adapt(player.getWorld()), rs);
         }
         return true;
     }
@@ -196,5 +187,19 @@ sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
         }
 
         return clipboard;
+    }
+
+    private void undo(Player player) {
+        EditSession es = editSessionManage.getHistEditSession(player);
+        if (es == null) {
+            player.sendMessage(ChatColor.RED + "ヒストリーがありません。通常の//undoコマンドをお試しください。");
+            return;
+        }
+        try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
+                .getEditSession(es.getWorld(), -1)) {
+            es.undo(newEditSession);
+        }
+        WorldEdit worldEdit = we.getWorldEdit();
+        worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
     }
 }
