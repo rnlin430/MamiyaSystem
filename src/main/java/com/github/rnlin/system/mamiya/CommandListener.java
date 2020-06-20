@@ -20,8 +20,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class CommandListener implements CommandExecutor {
@@ -32,8 +30,6 @@ public class CommandListener implements CommandExecutor {
     private boolean copyEntities = true;
     private final String NO_UNDO_MESSAGE = "ヒストリーがありません。";
     private final String NO_REDO_MESSAGE = "ヒストリーがありません。";
-//    private List<EditSession> editSessionNew = new ArrayList<>();
-
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
        this.plugin = plugin;
@@ -43,124 +39,77 @@ public class CommandListener implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
-        // undo command.
-        if (command.getLabel().equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[1])) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "You can only execute this command in game.");
-sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
-                return true;
-            }
-            Player player = (Player) sender;
-            if (!editSessionManage.isUndo(player.getName())) {
-                undo(player);
-            } else {
-                sender.sendMessage(ChatColor.RED + NO_UNDO_MESSAGE);
-            }
-            return true;
-        }
-
-        // regen command.
+        //mamiyasystem command
         if (label.equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0])) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "You can only execute this command in game.");
-                sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[0]);
+            if (args[0].equalsIgnoreCase("undo")) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + "You can only execute this command in game.");
+                    sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[1]);
+                    return true;
+                }
+                Player player = (Player) sender;
+                if (!editSessionManage.isUndo(player.getName())) {
+                    undo(player);
+                } else {
+                    sender.sendMessage(ChatColor.RED + NO_UNDO_MESSAGE);
+                }
                 return true;
             }
 
-//            // debug
-//            if (args.length > 0) {
-//
-//                Player player = (Player) sender;
-//                LocalSession session = we.getSession(player);
-//                com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
-//                System.out.println("getEditSessionAddHistory presentWorld#Name=" + presentWorld.getName());
-////                com.sk89q.worldedit.world.World presentWorld = BukkitAdapter.adapt(player.getWorld());
-//                RegionSelector rs = session.getRegionSelector(presentWorld);
-//
-//                World originWorld = Objects.requireNonNull(Bukkit.getWorld("origin"),
-//                        "origin" + " is not found.");
-//                session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
-//
-//                Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
-//
-//                EditSession editSession = WorldEdit
-//                        .getInstance()
-//                        .getEditSessionFactory()
-//                        .getEditSession(BukkitAdapter.adapt(originWorld), -1);
-//
-//                CuboidRegion region2 = new CuboidRegion(BukkitAdapter.adapt(originWorld), region.getMinimumPoint(), region.getMaximumPoint());
-//                BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-//
-//                ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-//                        editSession, region2, clipboard, region2.getMinimumPoint()
-//                );
-//                // configure here
-//                try {
-//                    Operations.complete(forwardExtentCopy);
-//                    forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(player)::print);
-//                } catch (WorldEditException ex) {
-//                    ex.printStackTrace();
-//                }
-//                EditSession editSessionNew = WorldEdit.getInstance().getEditSessionFactory().getEditSession(presentWorld, -1);
-//                this.editSessionNew.add(editSessionNew);
-//                Operation operation = new ClipboardHolder(clipboard)
-//                        .createPaste(editSessionNew)
-//                        .to(region2.getMinimumPoint())
-//                        .copyEntities(true)
-//                        // configure here
-//                        .build();
-//
-//                try {
-//                    Operations.complete(operation);
-//                } catch (WorldEditException e) {
-//                    e.printStackTrace();
-//                }
-//                editSessionNew.close();
-//               return true;
-//            }
+            if (args[0].equalsIgnoreCase("redo")) {
 
-            Player player = (Player) sender;
-            LocalSession session = we.getSession(player);
-
-            World originWorld;
-            try {
-                originWorld = Objects.requireNonNull(
-                        Bukkit.getWorld(MamiyaSystemPlugin.originWorldName),
-                        "World " + MamiyaSystemPlugin.originWorldName + " is not found."
-                );
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-                player.sendMessage(ChatColor.YELLOW + "ワールド \"" + MamiyaSystemPlugin.originWorldName + "\" が見つかりません。");
-                return true;
             }
 
-            com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
-            RegionSelector rs = session.getRegionSelector(presentWorld);
+            if (args[0].equalsIgnoreCase("regen")) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + "You can only execute this command in game.");
+                    sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[0]);
+                    return true;
+                }
 
-            // Change RegionSelector from present world to original world.
-            session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
+                Player player = (Player) sender;
+                LocalSession session = we.getSession(player);
 
-            Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
+                World originWorld;
+                try {
+                    originWorld = Objects.requireNonNull(
+                            Bukkit.getWorld(MamiyaSystemPlugin.originWorldName),
+                            "World " + MamiyaSystemPlugin.originWorldName + " is not found."
+                    );
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    player.sendMessage(ChatColor.YELLOW + "ワールド \"" + MamiyaSystemPlugin.originWorldName + "\" が見つかりません。");
+                    return true;
+                }
 
-            // copy
-           BlockArrayClipboard clipboard = copy(region, player, -1);
+                com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+                RegionSelector rs = session.getRegionSelector(presentWorld);
 
-            // paste
+                // Change RegionSelector from present world to original world.
+                session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
+
+                Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
+
+                // copy
+                BlockArrayClipboard clipboard = copy(region, player, -1);
+
+                // paste
 //            BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-            EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
-            Operation operation = new ClipboardHolder(clipboard)
-                    .createPaste(editSession)
-                    .to(region.getMinimumPoint())
-                    .copyEntities(copyEntities)
-                    // configure here
-                    .build();
-            try {
-                Operations.complete(operation);
-            } catch (WorldEditException e) {
-                e.printStackTrace();
+                EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
+                Operation operation = new ClipboardHolder(clipboard)
+                        .createPaste(editSession)
+                        .to(region.getMinimumPoint())
+                        .copyEntities(copyEntities)
+                        // configure here
+                        .build();
+                try {
+                    Operations.complete(operation);
+                } catch (WorldEditException e) {
+                    e.printStackTrace();
+                }
+                editSession.close();
+                session.setRegionSelector(BukkitAdapter.adapt(player.getWorld()), rs);
             }
-            editSession.close();
-            session.setRegionSelector(BukkitAdapter.adapt(player.getWorld()), rs);
         }
         return true;
     }

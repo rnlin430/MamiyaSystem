@@ -35,7 +35,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
 
     protected static String originWorldName = "origin";
 
-    public static String[] COMMANDS = {"//regen", "//undo"};
+    public static String[] COMMANDS = {"mamiyasysmtem"};
     private WorldEditPlugin worldEdit = null;
 
     @Override

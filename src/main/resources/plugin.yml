@@ -3,7 +3,6 @@ version: @version@
 main: com.github.rnlin.system.mamiya.MamiyaSystemPlugin
 api-version: 1.15
 depend: [WorldEdit]
-softdepend: [Essentials]
 authors: [rnlin]
 description: Mamiya System
 
@@ -16,24 +15,39 @@ commands:
       /wrc
     permisson: worldriptidecanceller.command.wr
     permission-message: You don't have the permission <permission>.
-  //regen:
+  mamiyasystem:
     description: It's regen of this plugin.
+    aliases: [ms]
     usage:
       /<command>
-    permisson: mamiya.system.command.regen
+    permisson: mamiya.system.command.mamiyasystem
     permission-message: You don't have the permission <permission>.
-  //undo:
-    description: It's undo of this plugin.
-    usage:
-      /<command>
-    permission: mamiya.system.command.undo
-    permission-message: You don't have the permission <permission>.
+
+permissions:
   worldriptidecanceller.command.wrc:
-    description: wrc command
+    description: wrc commands
     default: op
   worldriptidecanceller.ignoreriptidecancel:
     description: ignore riptide cancel
     default: false
-  mamiya.system.command.regen:
-    description: regen command
+  mamiya.system.command.mamiyasystem:
+    description: Allows you to use mamiyasystem command
+    default: op
+    children:
+      mamiya.system.regen.command.*: true
+  mamiya.system.regen.command.*:
+    description: Allows you to use mamiyasystem all regen commands
+    default: op
+    children:
+      mamiya.system.regen.command.regen: true
+      mamiya.system.regen.command.undo: true
+      mamiya.system.regen.command.redo: true
+  mamiya.system.regen.command.regen:
+    description: Allows you to use regen command
+    default: op
+  mamiya.system.regen.command.undo:
+    description: Allows you to use undo command
+    default: op
+  mamiya.system.regen.command.redo:
+    description: Allows you to use redo command
     default: op
