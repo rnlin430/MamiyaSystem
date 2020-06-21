@@ -35,7 +35,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
 
     protected static String originWorldName = "origin";
 
-    public static String[] COMMANDS = {"mamiyasysmtem"};
+    public static String[] COMMANDS = {"ms"};
     private WorldEditPlugin worldEdit = null;
 
     @Override
@@ -240,7 +240,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
                             }
                             return false;
                     }
-                return false;
+                return true;
         }
         return false;
     }

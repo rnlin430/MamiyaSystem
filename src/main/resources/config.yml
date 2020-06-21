@@ -1,7 +1,11 @@
-# update_frequency: 40(tick)
+# 激流キャンセラー設定
 enable: false
-tps_threshold: 17
+tps_threshold: 18
 update_frequency: 1200
 start_message: "§l§nStart message"
 end_message: "§l§nEnd message"
 cancel_message: "§7cancel message"
+# 再生成補助設定機能
+RegenerationAssist:
+  enable: true
+  origin_world_name: "origin"

@@ -11,6 +11,8 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -40,7 +42,8 @@ public class CommandListener implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         //mamiyasystem command
-        if (label.equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0])) {
+        if (command.getLabel().equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0])) {
+            if(args.length != 1) return true;
             if (args[0].equalsIgnoreCase("undo")) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "You can only execute this command in game.");
@@ -48,8 +51,11 @@ public class CommandListener implements CommandExecutor {
                     return true;
                 }
                 Player player = (Player) sender;
-                if (!editSessionManage.isUndo(player.getName())) {
+                if (editSessionManage.isUndo(player.getName())) {
                     undo(player);
+                    BukkitAdapter.adapt(player).printInfo(TranslatableComponent.of(
+                            "worldedit.undo.undone", TextComponent.of(1)
+                            ));
                 } else {
                     sender.sendMessage(ChatColor.RED + NO_UNDO_MESSAGE);
                 }
@@ -57,6 +63,7 @@ public class CommandListener implements CommandExecutor {
             }
 
             if (args[0].equalsIgnoreCase("redo")) {
+                return true;
 
             }
 
@@ -109,6 +116,7 @@ public class CommandListener implements CommandExecutor {
                 }
                 editSession.close();
                 session.setRegionSelector(BukkitAdapter.adapt(player.getWorld()), rs);
+                return true;
             }
         }
         return true;
@@ -150,5 +158,9 @@ public class CommandListener implements CommandExecutor {
         }
         WorldEdit worldEdit = we.getWorldEdit();
         worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
+    }
+
+    private void redo(Player player) {
+
     }
 }

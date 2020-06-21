@@ -39,9 +39,16 @@ public class EditSessionManage {
         String pn = player.getName();
         Integer pointer = historyPointer.get(pn);
         if (pointer <= -1)  return null;
-        EditSession editSession = Objects.requireNonNull(history.get(pn).get(pointer));
+        List<EditSession> array = history.get(pn);
+        EditSession editSession = Objects.requireNonNull(array.get(pointer));
+        array.remove(pointer.intValue());
         historyPointer.put(pn, --pointer);
         return editSession;
+    }
+
+    public int getHistoryPointer(Player player) {
+        String name = player.getName();
+        return historyPointer.get(name);
     }
 
     public boolean isUndo(@NotNull String playerName) {
