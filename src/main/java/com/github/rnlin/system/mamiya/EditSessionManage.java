@@ -41,7 +41,6 @@ public class EditSessionManage {
         if (pointer <= -1)  return null;
         List<EditSession> array = history.get(pn);
         EditSession editSession = Objects.requireNonNull(array.get(pointer));
-        array.remove(pointer.intValue());
         historyPointer.put(pn, --pointer);
         return editSession;
     }
@@ -130,15 +129,20 @@ public class EditSessionManage {
         // historyPointer count up
         if (this.historyPointer.containsKey(playerName)) {
             Integer a = this.historyPointer.get(playerName);
-            System.out.println("Befor" + a);
             this.historyPointer.put(playerName, ++a);
-            System.out.println("After" + this.historyPointer.get(playerName));
         } else {
             this.historyPointer.put(playerName, 0);
         }
 
         // history
         if (this.history.containsKey(playerName)) {
+            int cpointer = getHistoryPointer(player) - 1;
+            int lastSessionPoint = this.history.get(playerName).size() - 1;
+            if (cpointer < lastSessionPoint) {
+                for (int i = cpointer; i < lastSessionPoint; i++) {
+                    this.history.get(playerName).remove(cpointer + 1);
+                }
+            }
             this.history.get(playerName).add(editSession);
         } else {
             this.history.put(playerName, new ArrayList<EditSession>(Arrays.asList(editSession)));
