@@ -53,8 +53,9 @@ public class CommandListener implements CommandExecutor {
                 Player player = (Player) sender;
                 if (editSessionManage.isUndo(player.getName())) {
                     undo(player);
+                    byte times = 1;
                     BukkitAdapter.adapt(player).printInfo(TranslatableComponent.of(
-                            "worldedit.undo.undone", TextComponent.of(1)
+                            "worldedit.undo.undone", TextComponent.of(times)
                             ));
                 } else {
                     sender.sendMessage(ChatColor.RED + NO_UNDO_MESSAGE);
@@ -63,8 +64,17 @@ public class CommandListener implements CommandExecutor {
             }
 
             if (args[0].equalsIgnoreCase("redo")) {
+                Player player = (Player) sender;
+                if (editSessionManage.isRedo(player.getName())) {
+                    redo(player);
+                    byte times = 1;
+                    BukkitAdapter.adapt(player).printInfo(TranslatableComponent.of(
+                            "worldedit.redo.redone", TextComponent.of(times)
+                    ));
+                } else {
+                    sender.sendMessage(ChatColor.RED + NO_REDO_MESSAGE);
+                }
                 return true;
-
             }
 
             if (args[0].equalsIgnoreCase("regen")) {
@@ -161,6 +171,16 @@ public class CommandListener implements CommandExecutor {
     }
 
     private void redo(Player player) {
-
+        EditSession es = editSessionManage.getLastEditSessionUndone(player);
+        if (es == null) {
+            player.sendMessage(ChatColor.RED + "ヒストリーがありません。通常の//redoコマンドをお試しください。");
+            return;
+        }
+        try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
+                .getEditSession(es.getWorld(), -1)) {
+            es.redo(newEditSession);
+        }
+        WorldEdit worldEdit = we.getWorldEdit();
+        worldEdit.flushBlockBag(BukkitAdapter.adapt(player), es);
     }
 }

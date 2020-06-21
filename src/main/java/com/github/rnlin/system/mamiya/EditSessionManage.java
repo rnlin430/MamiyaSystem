@@ -37,13 +37,31 @@ public class EditSessionManage {
     public EditSession getHistEditSession(@NotNull Player player) {
         if (!player.isOnline()) return null;
         String pn = player.getName();
-        Integer pointer = historyPointer.get(pn);
+        int pointer = historyPointer.get(pn);
         if (pointer <= -1)  return null;
         List<EditSession> array = history.get(pn);
         EditSession editSession = Objects.requireNonNull(array.get(pointer));
         historyPointer.put(pn, --pointer);
         return editSession;
     }
+    /**
+     * 履歴に基づいて最後にundo()を実行したEditSessionオブジェクトを返します。
+     * 通常はredo処理時に使用するEditSessionを得たいときに使います。
+     * @param player
+     * @return EditSession Returns {@code null} if
+     */
+    @Nullable
+    public EditSession getLastEditSessionUndone(@NotNull Player player) {
+        if (!player.isOnline()) return null;
+        String pn = player.getName();
+        int pointer = historyPointer.get(pn);
+        int lastSessionPoint = history.get(pn).size() - 1;
+        if (!isRedo(pn)) return null;
+        pointer++;
+        historyPointer.put(pn, pointer);
+        return history.get(pn).get(pointer);
+    }
+
 
     public int getHistoryPointer(Player player) {
         String name = player.getName();
