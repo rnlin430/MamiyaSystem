@@ -36,7 +36,7 @@ permissions:
     children:
       mamiya.system.regen.command.*: true
   mamiya.system.regen.command.*:
-    description: Allows you to use mamiyasystem all regen commands
+    description: Allows you to use mamiyasystem all regenalation commands
     default: op
     children:
       mamiya.system.regen.command.regen: true
@@ -53,5 +53,5 @@ permissions:
     description: Allows you to use redo command
     default: op
   mamiya.system.regen.command.help:
-    description: Allows you to use redo command
+    description: Allows you to use help command
     default: op

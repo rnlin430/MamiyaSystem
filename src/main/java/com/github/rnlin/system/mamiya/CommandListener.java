@@ -21,8 +21,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public class CommandListener implements CommandExecutor {
@@ -46,8 +48,41 @@ public class CommandListener implements CommandExecutor {
         if (!inspection(sender, command, args)) return true;
         //mamiyasystem command
         if (command.getLabel().equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0])) {
-            if(args.length != 1) return true;
-
+            if(args.length == 0) {
+                if (!inspection(sender, command, args)) return true;
+                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**=---" + plugin.getDescription().getName() + "---==**");
+                sender.sendMessage("*" + ChatColor.BOLD + " API Version " + ChatColor.GREEN + plugin.getDescription().getAPIVersion());
+                sender.sendMessage("*" + ChatColor.BOLD + " Plugin Version " + ChatColor.GREEN + plugin.getDescription().getVersion());
+                sender.sendMessage("*" + ChatColor.BOLD + " Developer " + ChatColor.GREEN + plugin.getDescription().getAuthors());
+                sender.sendMessage("*" + ChatColor.BOLD + " Usage " + ChatColor.GREEN + "/ms help");
+                sender.sendMessage("*" + ChatColor.BOLD + " Site " + ChatColor.GREEN + plugin.getSiteURL());
+                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**=------------------==**");
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("help")) {
+                if (!inspection(sender, command, args)) return true;
+                sender.sendMessage(ChatColor.BOLD +""+ ChatColor.AQUA + "----- コマンド一覧 -----");
+                sender.sendMessage(ChatColor.GREEN + "/ms " + ChatColor.RESET + "基本コマンド");
+                sender.sendMessage(ChatColor.GREEN + "/ms regen " + ChatColor.RESET + "木の斧で範囲を選択し土地を再生成します。\n           (" +
+                        MamiyaSystemPlugin.originWorldName + " ワールドからコピーします。)");
+                sender.sendMessage(ChatColor.GREEN +"/ms undo " + ChatColor.RESET + "/ms regen で変更したブロックを元に戻します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms redo " + ChatColor.RESET + "/ms undo で元に戻したブロックをやり直します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms permission " + ChatColor.RESET + "パーミッションノードを表示します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms help " + ChatColor.RESET + "このヘルプを表示します。");
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("permission")) {
+                if (!inspection(sender, command, args)) return true;
+                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "----- Permissionノード一覧 -----");
+                @NotNull List<org.bukkit.permissions.Permission> permissionList = plugin.getDescription().getPermissions();
+                for (Permission p : permissionList) {
+                    if (p.getName().contains("worldriptidecanceller")) continue;
+                    sender.sendMessage(ChatColor.GREEN + p.getName());
+                    sender.sendMessage(ChatColor.DARK_AQUA + "[Description] " + p.getDescription());
+                    sender.sendMessage(ChatColor.DARK_AQUA + "[Default] " + p.getDefault().toString());
+                }
+                return true;
+            }
             if (args[0].equalsIgnoreCase("undo")) {
                 if (!inspection(sender, command, args)) return true;
                 if (!(sender instanceof Player)) {
@@ -155,7 +190,7 @@ public class CommandListener implements CommandExecutor {
                 if (sender.hasPermission("mamiya.system.regen.command.redo")) return true;
                 sender.sendMessage(ChatColor.RED + DO_NOT_EXECUTE_MESSAGE);
                 return false;
-            } else if (args[0].equalsIgnoreCase("help")) {
+            } else if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("permission")) {
                 if (sender.hasPermission("mamiya.system.regen.command.help")) return true;
                 sender.sendMessage(ChatColor.RED + DO_NOT_EXECUTE_MESSAGE);
                 return false;
