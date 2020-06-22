@@ -28,6 +28,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     public static String    cancelMessage       = null;
     public static double    tpsThreshold        = 17;
     public static int       updateFrequency     = 20 * 60;
+    public static boolean enableRegeneration = true;
     private static MamiyaSystemPlugin instance;
     private FileConfiguration config;
     private static HashMap<Player, Integer> bukkitIdManager = new HashMap<>();
@@ -265,6 +266,8 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
         startMessage      = this.config.getString ("start_message", null);
         endMessage        = this.config.getString ("end_message", null);
         cancelMessage     = this.config.getString ("cancel_message", null);
+        enableRegeneration = this.config.getBoolean ("RegenerationAssist.enable", true);
+        originWorldName    = this.config.getString ("RegenerationAssist.origin_world_name", "origin");
         this.reloadConfig();
         if (bukkitTask != null)
             if (!bukkitTask.isCancelled())
