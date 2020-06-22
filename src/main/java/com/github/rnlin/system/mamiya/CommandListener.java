@@ -40,6 +40,7 @@ public class CommandListener implements CommandExecutor {
        this.we = we;
        this.editSessionManage = new EditSessionManage(we);
     }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
@@ -207,7 +208,6 @@ public class CommandListener implements CommandExecutor {
         }
         editSession.close();
     }
-
 
     private void undo(Player player) {
         EditSession es = editSessionManage.getHistEditSession(player);
