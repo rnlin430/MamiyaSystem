@@ -42,6 +42,7 @@ permissions:
       mamiya.system.regen.command.regen: true
       mamiya.system.regen.command.undo: true
       mamiya.system.regen.command.redo: true
+      mamiya.system.regen.command.help: true
   mamiya.system.regen.command.regen:
     description: Allows you to use regen command
     default: op
@@ -49,5 +50,8 @@ permissions:
     description: Allows you to use undo command
     default: op
   mamiya.system.regen.command.redo:
+    description: Allows you to use redo command
+    default: op
+  mamiya.system.regen.command.help:
     description: Allows you to use redo command
     default: op
