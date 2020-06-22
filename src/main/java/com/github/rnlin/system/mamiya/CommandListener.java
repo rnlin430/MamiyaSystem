@@ -123,7 +123,6 @@ public class CommandListener implements CommandExecutor {
                 BlockArrayClipboard clipboard = copy(region, player, -1);
 
                 // paste
-                EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
                 BlockVector3 to = region.getMinimumPoint();
                 paste(clipboard, player, to);
 
