@@ -45,7 +45,6 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
 
         new RiptideListener(this);
         Object maybewe = getServer().getPluginManager().getPlugin("WorldEdit");
-        getServer().broadcastMessage(maybewe.toString());
         if (maybewe instanceof WorldEditPlugin) {
             this.worldEdit = (WorldEditPlugin) maybewe;
         }
@@ -63,6 +62,17 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
     }
+
+    public URL getSiteURL() {
+        URL url = null;
+        try {
+            url = new URL("https://github.com/rnlin430/MamiyaSystem");
+        } catch (MalformedURLException e) {
+            info(ChatColor.GRAY + "未設定です。");
+        }
+        return url;
+    }
+
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -295,16 +305,5 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     @Nullable
     public static MamiyaSystemPlugin getInstance() {
         return instance;
-    }
-
-    public URL getSiteURL() {
-        URL url = null;
-        try {
-            url = new URL("https://github.com/rnlin430/");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            info(ChatColor.GRAY + "未設定です。");
-        }
-        return url;
     }
 }
