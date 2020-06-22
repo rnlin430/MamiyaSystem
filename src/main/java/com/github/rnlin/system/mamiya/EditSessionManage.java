@@ -40,7 +40,6 @@ public class EditSessionManage {
         int pointer = historyPointer.get(pn);
         if (pointer <= -1)  return null;
         List<EditSession> array = history.get(pn);
-        player.sendMessage("array=" + array + ChatColor.AQUA + pointer);
         EditSession editSession = Objects.requireNonNull(array.get(pointer));
         historyPointer.put(pn, --pointer);
         return editSession;
