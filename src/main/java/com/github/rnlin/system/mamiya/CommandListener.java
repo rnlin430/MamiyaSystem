@@ -169,6 +169,7 @@ public class CommandListener implements CommandExecutor {
     }
 
     private boolean inspection(CommandSender sender, Command command, String[] args) {
+        if (!MamiyaSystemPlugin.enableRegeneration) return false;
         String DO_NOT_EXECUTE_MESSAGE = "You are not permitted to do that. Are you in the right mode?";
         if (command.getLabel().equalsIgnoreCase("ms") && args.length == 0) {
             if (sender.hasPermission("mamiya.system.regen.command.*")) return true;
