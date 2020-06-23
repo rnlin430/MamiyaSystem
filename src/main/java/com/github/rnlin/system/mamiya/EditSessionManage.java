@@ -21,7 +21,6 @@ public class EditSessionManage {
     private Map<String, List<EditSession>> history = new HashMap<>();
 //    private HistoryManage historyManage;
 
-
     public EditSessionManage(WorldEditPlugin we) {
         this.we = we;
 //        historyManage = this.new HistoryManage();
@@ -55,13 +54,12 @@ public class EditSessionManage {
         if (!player.isOnline()) return null;
         String pn = player.getName();
         int pointer = historyPointer.get(pn);
-        int lastSessionPoint = history.get(pn).size() - 1;
+//        int lastSessionPoint = history.get(pn).size() - 1;
         if (!isRedo(pn)) return null;
         pointer++;
         historyPointer.put(pn, pointer);
         return history.get(pn).get(pointer);
     }
-
 
     public int getHistoryPointer(Player player) {
         String name = player.getName();
@@ -128,7 +126,6 @@ public class EditSessionManage {
 //        } catch (WorldEditException ex) {
 //            ex.printStackTrace();
 //        }
-
         EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(presentWorld, maxLimitblock);
 //        Operation operation = new ClipboardHolder(clipboard)
 //                .createPaste(editSession)
@@ -152,7 +149,6 @@ public class EditSessionManage {
             this.historyPointer.put(playerName, 0);
         }
 
-System.out.println("getEditSessionAddHistory");
         // history
         if (this.history.containsKey(playerName)) {
             int cpointer = getHistoryPointer(player) - 1;
