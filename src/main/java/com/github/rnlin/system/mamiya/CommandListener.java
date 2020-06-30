@@ -241,10 +241,10 @@ public class CommandListener implements CommandExecutor {
                 .getEditSessionFactory()
                 .getEditSession(world, maxBlock);
 
-        CuboidRegion cuboidRegion = new CuboidRegion(world, region.getMinimumPoint(), region.getMaximumPoint());
+//        CuboidRegion cuboidRegion = new CuboidRegion(world, region.getMinimumPoint(), region.getMaximumPoint());
         BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
         ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-                editSession, cuboidRegion, clipboard, cuboidRegion.getMinimumPoint()
+                editSession, region, clipboard, region.getMinimumPoint()
         );
         // configure
         forwardExtentCopy.setCopyingEntities(copyEntities);
