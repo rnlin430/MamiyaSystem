@@ -3,17 +3,21 @@ package com.github.rnlin.system.mamiya;
 import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.extension.platform.PlatformCommandManager;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverter;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
+import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -22,6 +26,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import org.enginehub.piston.exception.CommandException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -36,11 +41,20 @@ public class CommandListener implements CommandExecutor {
     private boolean copyBiomes = true;
     private final String NO_UNDO_MESSAGE = "ヒストリーがありません。";
     private final String NO_REDO_MESSAGE = "ヒストリーがありません。";
+    private WorldEditExceptionConverter exceptionConverter = null;
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
        this.plugin = plugin;
        this.we = we;
        this.editSessionManage = new EditSessionManage(we);
+       PlatformCommandManager pcm = we.getWorldEdit().getPlatformManager().getPlatformCommandManager();
+        try {
+            exceptionConverter = Reflection.<PlatformCommandManager, WorldEditExceptionConverter>getValue(pcm, "exceptionConverter");
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -150,6 +164,23 @@ public class CommandListener implements CommandExecutor {
                 com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
                 RegionSelector rs = session.getRegionSelector(presentWorld);
 
+                try {
+                    session.getSelection(presentWorld);
+                } catch (IncompleteRegionException e) {
+                    try {
+                        exceptionConverter.convert(e);
+                    } catch (CommandException ce) {
+                        BukkitAdapter.adapt(player).print(TextComponent.builder("")
+                                .color(TextColor.RED)
+                                .append(ce.getRichMessage())
+                                .build());
+                    }
+                    return true;
+                }
+//                if (!rs.isDefined()) {
+//                    return true;
+//                }
+
                 // Change RegionSelector from present world to original world.
                 session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
 
@@ -210,10 +241,10 @@ public class CommandListener implements CommandExecutor {
                 .getEditSessionFactory()
                 .getEditSession(world, maxBlock);
 
-        CuboidRegion cuboidRegion = new CuboidRegion(world, region.getMinimumPoint(), region.getMaximumPoint());
+//        CuboidRegion cuboidRegion = new CuboidRegion(world, region.getMinimumPoint(), region.getMaximumPoint());
         BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
         ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-                editSession, cuboidRegion, clipboard, cuboidRegion.getMinimumPoint()
+                editSession, region, clipboard, region.getMinimumPoint()
         );
         // configure
         forwardExtentCopy.setCopyingEntities(copyEntities);
