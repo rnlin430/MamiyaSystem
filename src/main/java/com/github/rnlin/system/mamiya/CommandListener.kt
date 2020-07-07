@@ -123,8 +123,7 @@ class CommandListener(private val plugin: MamiyaSystemPlugin, private val we: Wo
                 val player = sender
                 val session = we.getSession(player)
                 val originWorld: World?
-                originWorld = Bukkit.getWorld(MamiyaSystemPlugin.originWorldName)
-                if (originWorld == null) {
+                originWorld = Bukkit.getWorld(MamiyaSystemPlugin.originWorldName) ?: run {
                     player.sendMessage(ChatColor.YELLOW.toString() + "ワールド \"" + MamiyaSystemPlugin.originWorldName + "\" が見つかりません。")
                     return true
                 }
