@@ -1,10 +1,8 @@
 package com.github.rnlin.system.mamiya;
 
-import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -36,7 +34,8 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
 
     protected static String originWorldName = "origin";
 
-    public static String[] COMMANDS = {"ms"};
+    public static String[] COMMANDS_REGEN = {"ms"};
+    public static String[] COMMANDS_COMMAND_GEN = {"ms"};
     private WorldEditPlugin worldEdit = null;
 
     @Override
@@ -51,8 +50,12 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
         }
         PluginManager pm = Bukkit.getPluginManager();
 
-        CommandListener cl = new CommandListener(this, worldEdit);
-        for (String command : COMMANDS) {
+        RegenCommand cl = new RegenCommand(this, worldEdit);
+        for (String command : COMMANDS_REGEN) {
+            getCommand(command).setExecutor(cl);
+        }
+        CommandGenCommand cgc = new CommandGenCommand(this);
+        for (String command : COMMANDS_COMMAND_GEN) {
             getCommand(command).setExecutor(cl);
         }
 

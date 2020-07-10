@@ -34,6 +34,7 @@ permissions:
     default: op
     children:
       mamiya.system.regen.command.*: true
+      mamiya.system.gencommand.command.*: true
   mamiya.system.regen.command.*:
     description: Allows you to use mamiyasystem all regenalation commands
     default: op
