@@ -43,6 +43,7 @@ public class EditSessionManage {
         historyPointer.put(pn, --pointer);
         return editSession;
     }
+
     /**
      * 履歴に基づいて最後にundo()を実行したEditSessionオブジェクトを返します。
      * 通常はredo処理時に使用するEditSessionを得たいときに使います。
@@ -141,26 +142,44 @@ public class EditSessionManage {
 //        }
 //        editSession.close();
 
+        // Regist editSession history
+        if (this.history.containsKey(playerName)) {
+            Integer cpointer = getHistoryPointer(player);
+            List<EditSession> playerEditsessionHist = this.history.get(playerName);
+
+            for (;playerEditsessionHist.size() >= MamiyaSystemPlugin.historyLimit;) {
+                playerEditsessionHist.remove(0);
+                historyPointer.put(playerName,  --cpointer);
+            }
+
+//-------------------------------|
+// 29  30  31  //index
+// +   +   +   //editSessionHist
+// ^           //cpointer
+//-------------------------------|
+            int lastSessionPoint = playerEditsessionHist.size() - 1;
+            if (cpointer < lastSessionPoint) {
+                for (int i = cpointer; i < lastSessionPoint; i++) {
+                    playerEditsessionHist.remove(cpointer + 1);
+                }
+            }
+
+            playerEditsessionHist.add(editSession);
+
+        } else {
+            this.history.put(playerName, new ArrayList<>(Arrays.asList(editSession)));
+        }
+
         // historyPointer count up
         if (this.historyPointer.containsKey(playerName)) {
             Integer a = this.historyPointer.get(playerName);
-            this.historyPointer.put(playerName, ++a);
+            if (a >= MamiyaSystemPlugin.historyLimit) {
+
+            } else {
+                this.historyPointer.put(playerName, ++a);
+            }
         } else {
             this.historyPointer.put(playerName, 0);
-        }
-
-        // history
-        if (this.history.containsKey(playerName)) {
-            int cpointer = getHistoryPointer(player) - 1;
-            int lastSessionPoint = this.history.get(playerName).size() - 1;
-            if (cpointer < lastSessionPoint) {
-                for (int i = cpointer; i < lastSessionPoint; i++) {
-                    this.history.get(playerName).remove(cpointer + 1);
-                }
-            }
-            this.history.get(playerName).add(editSession);
-        } else {
-            this.history.put(playerName, new ArrayList<EditSession>(Arrays.asList(editSession)));
         }
         return editSession;
     }

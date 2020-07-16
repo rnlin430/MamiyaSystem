@@ -29,6 +29,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     public static double    tpsThreshold        = 17;
     public static int       updateFrequency     = 20 * 60;
     public static boolean enableRegeneration = true;
+    public static short historyLimit = 32;
     private static MamiyaSystemPlugin instance;
     private FileConfiguration config;
     private static HashMap<Player, Integer> bukkitIdManager = new HashMap<>();

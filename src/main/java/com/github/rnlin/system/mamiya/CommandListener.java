@@ -39,8 +39,8 @@ public class CommandListener implements CommandExecutor {
     private EditSessionManage editSessionManage;
     private boolean copyEntities = true;
     private boolean copyBiomes = true;
-    private final String NO_UNDO_MESSAGE = "ヒストリーがありません。";
-    private final String NO_REDO_MESSAGE = "ヒストリーがありません。";
+    private final String NO_UNDO_MESSAGE = "ヒストリーがありません。(undo)";
+    private final String NO_REDO_MESSAGE = "ヒストリーがありません。(redo)";
     private WorldEditExceptionConverter exceptionConverter = null;
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
