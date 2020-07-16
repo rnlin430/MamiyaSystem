@@ -41,7 +41,7 @@ task updateDependency(type: Copy) {
 task copyPluginToTestserver(dependsOn: ['build'], type: Copy) {
     from "${buildDir}/libs"
     into "${pluginsPath}"
-    include "*" + version + ".jar"
+    include "*" + "-" + version + ".jar"
 }
 
 dependencies {
