@@ -68,6 +68,9 @@ public class EditSessionManage {
     }
 
     public boolean isUndo(@NotNull String playerName) {
+        if (historyPointer == null) {
+            return false;
+        }
         if (-1 >= historyPointer.get(playerName) || !historyPointer.containsKey(playerName)) {
             return false;
         } else {
@@ -76,8 +79,14 @@ public class EditSessionManage {
     }
 
     public boolean isRedo(@NotNull String playerName) {
+        if (history.get(playerName) == null) {
+            return false;
+        }
         int historySize = history.get(playerName).size();
         if (historySize < 1) return false;
+        if (historyPointer == null) {
+            return false;
+        }
         if (historySize - 1 <= historyPointer.get(playerName)) {
             return false;
         } else {
