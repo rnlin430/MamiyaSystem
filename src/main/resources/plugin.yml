@@ -16,7 +16,7 @@ commands:
     permission-message: You don't have the permission <permission>.
   ms:
     description: It's regen of this plugin.
-    aliases: [mamiyasystem]
+    aliases: [/ms, mamiyasystem]
     usage:
       /<command>
     permisson: mamiya.system.command.mamiyasystem

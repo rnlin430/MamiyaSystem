@@ -15,7 +15,7 @@ public class Reflection {
         return (U) field.get(obj);
     }
 
-    // Dynamically setting a value from private memver.
+    // Dynamically setting a value from private member.
     protected static <T extends Object> void setValue(@NotNull T obj, @NotNull String fieldname, @NotNull String value)
             throws IllegalAccessException ,NoSuchFieldException{
         Field field = null;

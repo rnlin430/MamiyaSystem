@@ -15,6 +15,7 @@ import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverte
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
@@ -62,26 +63,28 @@ public class CommandListener implements CommandExecutor {
 
         if (!inspection(sender, command, args)) return true;
         //mamiyasystem command
-        if (command.getLabel().equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0])) {
+        if (command.getLabel().equalsIgnoreCase(MamiyaSystemPlugin.COMMANDS[0]) ||
+                command.getLabel().equalsIgnoreCase("/" + MamiyaSystemPlugin.COMMANDS[0])) {
             if(args.length == 0) {
                 if (!inspection(sender, command, args)) return true;
-                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**=---" + plugin.getDescription().getName() + "---==**");
+                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**==----------》" + plugin.getDescription().getName() + "《----------==**");
                 sender.sendMessage("*" + ChatColor.BOLD + " API Version " + ChatColor.GREEN + plugin.getDescription().getAPIVersion());
                 sender.sendMessage("*" + ChatColor.BOLD + " Plugin Version " + ChatColor.GREEN + plugin.getDescription().getVersion());
                 sender.sendMessage("*" + ChatColor.BOLD + " Developer " + ChatColor.GREEN + plugin.getDescription().getAuthors());
                 sender.sendMessage("*" + ChatColor.BOLD + " Usage " + ChatColor.GREEN + "/ms help");
                 sender.sendMessage("*" + ChatColor.BOLD + " Site " + ChatColor.GREEN + plugin.getSiteURL());
-                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**=------------------==**");
+                sender.sendMessage(ChatColor.AQUA +""+ ChatColor.BOLD + "**==------------------------------------==**");
                 return true;
             }
             if (args[0].equalsIgnoreCase("help")) {
                 if (!inspection(sender, command, args)) return true;
                 sender.sendMessage(ChatColor.BOLD +""+ ChatColor.AQUA + "----- コマンド一覧 -----");
                 sender.sendMessage(ChatColor.GREEN + "/ms " + ChatColor.RESET + "基本コマンド");
-                sender.sendMessage(ChatColor.GREEN + "/ms regen " + ChatColor.RESET + "木の斧で範囲を選択し土地を再生成します。\n           (" +
-                        MamiyaSystemPlugin.originWorldName + " ワールドからコピーします。)");
-                sender.sendMessage(ChatColor.GREEN +"/ms undo " + ChatColor.RESET + "/ms regen で変更したブロックを元に戻します。");
-                sender.sendMessage(ChatColor.GREEN +"/ms redo " + ChatColor.RESET + "/ms undo で元に戻したブロックをやり直します。");
+                sender.sendMessage(ChatColor.GREEN + "/ms regen [-e] " + ChatColor.RESET + "\n木の斧で範囲を選択し、" +
+                        ChatColor.AQUA + MamiyaSystemPlugin.originWorldName + ChatColor.WHITE + "ワールドを元に土地を再生成します。" +
+                        "-eオプションを付けると選択範囲のEntityを無視します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms undo " + ChatColor.RESET + "コマンド /ms regen によって変更したブロックを元に戻します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms redo " + ChatColor.RESET + "コマンド /ms undo によって元に戻したブロックをやり直します。");
                 sender.sendMessage(ChatColor.GREEN +"/ms permission " + ChatColor.RESET + "パーミッションノードを表示します。");
                 sender.sendMessage(ChatColor.GREEN +"/ms help " + ChatColor.RESET + "このヘルプを表示します。");
                 return true;
@@ -138,6 +141,17 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
 
+            if (args[0].equalsIgnoreCase("debug")) {
+                Player player = (Player) sender;
+player.sendMessage("debug");
+System.out.println("debug");
+//                LocalSession session = we.getSession(player);
+//                com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
+//                Region region = session.getRegionSelector(presentWorld).getIncompleteRegion();
+//                removeEntity(region, player, -1);
+                return true;
+            }
+
             if (args[0].equalsIgnoreCase("regen")) {
                 if (!inspection(sender, command, args)) return true;
                 if (!(sender instanceof Player)) {
@@ -177,13 +191,23 @@ public class CommandListener implements CommandExecutor {
                     }
                     return true;
                 }
-//                if (!rs.isDefined()) {
-//                    return true;
-//                }
+
+                // This EditSession instance is used by paste and remove entity.
+                EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
+
+                if (args.length >= 2) {
+                    if (!args[1].equalsIgnoreCase("-e")) {
+                        player.sendMessage(ChatColor.RED + "Usage: /ms regen" + ChatColor.RED + " -e\nEntityを消去しません。");
+                        return true;
+                    }
+                } else {
+                    // remove Entity
+                    Region selectedRegion = session.getRegionSelector(presentWorld).getIncompleteRegion();
+                    removeEntity(editSession, selectedRegion, player);
+                }
 
                 // Change RegionSelector from present world to original world.
                 session.setRegionSelector(BukkitAdapter.adapt(originWorld), rs);
-
                 Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
 
                 // copy
@@ -191,9 +215,10 @@ public class CommandListener implements CommandExecutor {
 
                 // paste
                 BlockVector3 to = region.getMinimumPoint();
-                paste(clipboard, player, to);
+                paste(editSession, clipboard, to);
 
                 session.setRegionSelector(BukkitAdapter.adapt(player.getWorld()), rs);
+
                 return true;
             }
         }
@@ -234,6 +259,23 @@ public class CommandListener implements CommandExecutor {
         return false;
     }
 
+    private EditSession removeEntity(EditSession editSession, Region region, Player player) {
+        BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+        ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
+                editSession, region, clipboard, region.getMinimumPoint()
+        );
+        // configure
+        forwardExtentCopy.setRemovingEntities(true);
+        try {
+            Operations.complete(forwardExtentCopy);
+//            forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(player)::print);
+            player.sendMessage("" + forwardExtentCopy.getAffected());
+        } catch (WorldEditException ex) {
+            ex.printStackTrace();
+        }
+         return editSession;
+    }
+
     private BlockArrayClipboard copy(Region region, Player player, int maxBlock) {
         com.sk89q.worldedit.world.World world = region.getWorld();
         EditSession editSession = WorldEdit
@@ -259,8 +301,7 @@ public class CommandListener implements CommandExecutor {
         return clipboard;
     }
 
-    private void paste(BlockArrayClipboard clipboard, Player player, BlockVector3 to) {
-        EditSession editSession = editSessionManage.getEditSessionAddHistory(player.getName());
+    private EditSession paste(EditSession editSession, BlockArrayClipboard clipboard, BlockVector3 to) {
         Operation operation = new ClipboardHolder(clipboard)
                 .createPaste(editSession)
                 .to(to)
@@ -274,6 +315,7 @@ public class CommandListener implements CommandExecutor {
             e.printStackTrace();
         }
         editSession.close();
+        return editSession;
     }
 
     private void undo(Player player) {
