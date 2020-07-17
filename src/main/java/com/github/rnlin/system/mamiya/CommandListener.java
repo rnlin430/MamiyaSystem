@@ -3,6 +3,7 @@ package com.github.rnlin.system.mamiya;
 import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.extension.platform.PlatformCommandManager;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
@@ -10,12 +11,9 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverter;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverter;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
@@ -42,6 +40,7 @@ public class CommandListener implements CommandExecutor {
     private boolean copyBiomes = true;
     private final String NO_UNDO_MESSAGE = "ヒストリーがありません。(undo)";
     private final String NO_REDO_MESSAGE = "ヒストリーがありません。(redo)";
+    private final String DO_NOT_EXECUTE_MESSAGE = "You are not permitted to do that. Are you in the right mode?";
     private WorldEditExceptionConverter exceptionConverter = null;
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
@@ -141,14 +140,10 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
 
-            if (args[0].equalsIgnoreCase("debug")) {
+            if (args[0].equalsIgnoreCase("db")) {
                 Player player = (Player) sender;
-player.sendMessage("debug");
-System.out.println("debug");
-//                LocalSession session = we.getSession(player);
-//                com.sk89q.worldedit.world.World presentWorld = session.getSelectionWorld();
-//                Region region = session.getRegionSelector(presentWorld).getIncompleteRegion();
-//                removeEntity(region, player, -1);
+player.sendMessage("db");
+System.out.println("db");
                 return true;
             }
 
@@ -197,13 +192,14 @@ System.out.println("debug");
 
                 if (args.length >= 2) {
                     if (!args[1].equalsIgnoreCase("-e")) {
-                        player.sendMessage(ChatColor.RED + "Usage: /ms regen" + ChatColor.RED + " -e\nEntityを消去しません。");
+                        player.sendMessage(ChatColor.RED + "Usage: /ms regen" + ChatColor.RED + " -e\n" +
+                                "Entityを消去しません。");
                         return true;
                     }
                 } else {
                     // remove Entity
                     Region selectedRegion = session.getRegionSelector(presentWorld).getIncompleteRegion();
-                    removeEntity(editSession, selectedRegion, player);
+                    removeEntity(editSession, selectedRegion);
                 }
 
                 // Change RegionSelector from present world to original world.
@@ -227,7 +223,6 @@ System.out.println("debug");
 
     private boolean inspection(CommandSender sender, Command command, String[] args) {
         if (!MamiyaSystemPlugin.enableRegeneration) return false;
-        String DO_NOT_EXECUTE_MESSAGE = "You are not permitted to do that. Are you in the right mode?";
         if (command.getLabel().equalsIgnoreCase("ms") && args.length == 0) {
             if (sender.hasPermission("mamiya.system.regen.command.*")) return true;
             sender.sendMessage(ChatColor.RED + DO_NOT_EXECUTE_MESSAGE);
@@ -259,19 +254,9 @@ System.out.println("debug");
         return false;
     }
 
-    private EditSession removeEntity(EditSession editSession, Region region, Player player) {
-        BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-        ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-                editSession, region, clipboard, region.getMinimumPoint()
-        );
-        // configure
-        forwardExtentCopy.setRemovingEntities(true);
-        try {
-            Operations.complete(forwardExtentCopy);
-//            forwardExtentCopy.getStatusMessages().forEach(BukkitAdapter.adapt(player)::print);
-            player.sendMessage("" + forwardExtentCopy.getAffected());
-        } catch (WorldEditException ex) {
-            ex.printStackTrace();
+    private EditSession removeEntity(EditSession editSession, Region region) {
+        for (Entity e : editSession.getEntities(region)) {
+//            e.remove();
         }
          return editSession;
     }
