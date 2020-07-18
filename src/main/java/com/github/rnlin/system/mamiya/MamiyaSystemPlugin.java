@@ -27,7 +27,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     public static double    tpsThreshold        = 17;
     public static int       updateFrequency     = 20 * 60;
     public static boolean enableRegeneration = true;
-    public static short historyLimit = 32;
+    public static short historyLimit = 64;
     public static boolean doChunkLoadOririnalWorld = false;
     private static MamiyaSystemPlugin instance;
     private FileConfiguration config;
