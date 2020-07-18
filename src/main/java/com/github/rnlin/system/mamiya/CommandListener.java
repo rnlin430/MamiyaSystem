@@ -10,6 +10,7 @@ import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.internal.command.exception.WorldEditExceptionConverter;
+import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
@@ -19,6 +20,7 @@ import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,8 +30,7 @@ import org.bukkit.permissions.Permission;
 import org.enginehub.piston.exception.CommandException;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class CommandListener implements CommandExecutor {
 
@@ -86,6 +87,7 @@ public class CommandListener implements CommandExecutor {
                 sender.sendMessage(ChatColor.GREEN +"/ms redo " + ChatColor.RESET + "コマンド /ms undo によって元に戻したブロックをやり直します。");
                 sender.sendMessage(ChatColor.GREEN +"/ms permission " + ChatColor.RESET + "パーミッションノードを表示します。");
                 sender.sendMessage(ChatColor.GREEN +"/ms help " + ChatColor.RESET + "このヘルプを表示します。");
+                sender.sendMessage(ChatColor.GREEN +"/ms debug " + ChatColor.RESET + "");
                 return true;
             }
             if (args[0].equalsIgnoreCase("permission")) {
@@ -140,10 +142,20 @@ public class CommandListener implements CommandExecutor {
                 return true;
             }
 
-            if (args[0].equalsIgnoreCase("db")) {
+            if (args[0].equalsIgnoreCase("debug")) {
                 Player player = (Player) sender;
-player.sendMessage("db");
-System.out.println("db");
+                if (args.length == 1) {
+                    player.sendMessage("[debug]");
+                    return true;
+                }
+                if (args[1].equals("true")) {
+                    MamiyaSystemPlugin.doChunkLoadOririnalWorld = true;
+                    player.sendMessage("コピー元ワールドのチャンクをあらかじめロードするモードになりました！");
+
+                } else if(args[1].equals("false")) {
+                    MamiyaSystemPlugin.doChunkLoadOririnalWorld = false;
+                    player.sendMessage("コピー元ワールドのチャンクがあらかじめロードされないモードになりました！");
+                }
                 return true;
             }
 
@@ -154,10 +166,8 @@ System.out.println("db");
                     sender.sendMessage("execute " + MamiyaSystemPlugin.COMMANDS[0]);
                     return true;
                 }
-
                 Player player = (Player) sender;
                 LocalSession session = we.getSession(player);
-
                 World originWorld;
                 try {
                     originWorld = Objects.requireNonNull(
@@ -207,7 +217,21 @@ System.out.println("db");
                 Region region = session.getRegionSelector(BukkitAdapter.adapt(originWorld)).getIncompleteRegion();
 
                 // copy
-                BlockArrayClipboard clipboard = copy(region, player, -1);
+                BlockArrayClipboard clipboard = null;
+                if (MamiyaSystemPlugin.doChunkLoadOririnalWorld) {
+                    // load chunks
+                    Set<Chunk> chunks = getChunks(region);
+                    for (Chunk c : chunks) {
+                        originWorld.loadChunk(c);
+                    }
+                    clipboard = copy(region, player, -1);
+                    // unload chunks
+                    for (Chunk c : chunks) {
+                        originWorld.unloadChunk(c);
+                    }
+                } else {
+                    clipboard = copy(region, player, -1);
+                }
 
                 // paste
                 BlockVector3 to = region.getMinimumPoint();
@@ -247,6 +271,8 @@ System.out.println("db");
                 if (sender.hasPermission("mamiya.system.regen.command.help")) return true;
                 sender.sendMessage(ChatColor.RED + DO_NOT_EXECUTE_MESSAGE);
                 return false;
+            } else if (args[0].equalsIgnoreCase("debug")) {
+                return true;
             } else {
                 return false;
             }
@@ -254,9 +280,17 @@ System.out.println("db");
         return false;
     }
 
+    private Set<Chunk> getChunks(Region region) {
+        Set<Chunk> chunks = new HashSet();
+        for (BlockVector2 bv2 : region.getChunks()) {
+            chunks.add(BukkitAdapter.adapt(region.getWorld()).getChunkAt(bv2.getX(), bv2.getZ()));
+        }
+        return chunks;
+    }
+
     private EditSession removeEntity(EditSession editSession, Region region) {
         for (Entity e : editSession.getEntities(region)) {
-//            e.remove();
+            e.remove();
         }
          return editSession;
     }

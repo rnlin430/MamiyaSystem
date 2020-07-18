@@ -9,3 +9,4 @@ cancel_message: "§7cancel message"
 RegenerationAssist:
   enable: true
   origin_world_name: "origin"
+  RegenerationAssist.chunk_load_original_world: false

@@ -5,7 +5,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class RiptideCancellerTask extends BukkitRunnable {
     private MamiyaSystemPlugin plugin;
-    public static boolean isRestricted = true;
+    protected static boolean isRestricted = true;
     private CommandSender sender;
 
     public RiptideCancellerTask(MamiyaSystemPlugin plugin){
@@ -22,7 +22,6 @@ public class RiptideCancellerTask extends BukkitRunnable {
     public void run() {
         TpsDataCollector rf = new TpsDataCollector(plugin);
         double[] tps = rf.getRecentTps();
-
         if(isRestricted){
             if(tps[0] <= MamiyaSystemPlugin.tpsThreshold){
                 if (MamiyaSystemPlugin.startMessage != null)

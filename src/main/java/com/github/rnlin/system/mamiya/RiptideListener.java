@@ -30,7 +30,7 @@ public class RiptideListener implements Listener {
 
     @EventHandler
     public void onPlayerRiptide (PlayerRiptideEvent e) {
-        if(!MamiyaSystemPlugin.isEnable) return;
+        if(!MamiyaSystemPlugin.isEnableWorldRepitiedCanceller) return;
         if(RiptideCancellerTask.isRestricted) return;
         Player player = e.getPlayer();
         Location from = player.getLocation();
