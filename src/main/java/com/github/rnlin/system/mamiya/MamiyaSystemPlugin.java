@@ -1,10 +1,8 @@
 package com.github.rnlin.system.mamiya;
 
-import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -22,7 +20,7 @@ import java.util.HashMap;
 
 public final class MamiyaSystemPlugin extends JavaPlugin {
 
-    public static boolean   isEnable            = true;
+    public static boolean   isEnableWorldRepitiedCanceller            = true;
     public static String    endMessage          = null;
     public static String    startMessage        = null;
     public static String    cancelMessage       = null;
@@ -30,10 +28,12 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     public static int       updateFrequency     = 20 * 60;
     public static boolean enableRegeneration = true;
     public static short historyLimit = 32;
+    public static boolean doChunkLoadOririnalWorld = false;
     private static MamiyaSystemPlugin instance;
     private FileConfiguration config;
     private static HashMap<Player, Integer> bukkitIdManager = new HashMap<>();
     private BukkitTask bukkitTask = null;
+    private RiptideListener riptideListener = null;
 
     protected static String originWorldName = "origin";
 
@@ -46,6 +46,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
         this.initialize();
 
         new RiptideListener(this);
+
         Object maybewe = getServer().getPluginManager().getPlugin("WorldEdit");
         if (maybewe instanceof WorldEditPlugin) {
             this.worldEdit = (WorldEditPlugin) maybewe;
@@ -92,7 +93,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
                     break;
                 case 1:
                     if (args[0].equalsIgnoreCase("true")) {
-                        isEnable = true;
+                        isEnableWorldRepitiedCanceller = true;
                         config = getConfig();
                         config.set("enable", true);
                         saveConfig();
@@ -102,7 +103,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
                         return true;
                     }
                     if (args[0].equalsIgnoreCase("false")) {
-                        isEnable = false;
+                        isEnableWorldRepitiedCanceller = false;
                         config = getConfig();
                         config.set("enable", false);
                         saveConfig();
@@ -116,7 +117,7 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
                         config = getConfig();
                         initialize();
                         sender.sendMessage(ChatColor.GRAY + "[" +  ChatColor.BLUE + "WRC" + ChatColor.GRAY + "]");
-                        sender.sendMessage(ChatColor.GRAY + "enable: "           + ChatColor.AQUA + isEnable);
+                        sender.sendMessage(ChatColor.GRAY + "enable: "           + ChatColor.AQUA + isEnableWorldRepitiedCanceller);
                         sender.sendMessage(ChatColor.GRAY + "tps_threshold: "    + ChatColor.AQUA + tpsThreshold);
                         sender.sendMessage(ChatColor.GRAY + "update_frequency: " + ChatColor.AQUA + updateFrequency);
                         sender.sendMessage(ChatColor.GRAY + "start_message: "    + ChatColor.AQUA + startMessage);
@@ -261,19 +262,21 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
         this.saveDefaultConfig();
         this.reloadConfig();
         this.config = getConfig();
-        isEnable          = this.config.getBoolean("enable");
-        tpsThreshold      = this.config.getDouble ("tps_threshold");
-        updateFrequency   = this.config.getInt    ("update_frequency");
-        startMessage      = this.config.getString ("start_message", null);
-        endMessage        = this.config.getString ("end_message", null);
-        cancelMessage     = this.config.getString ("cancel_message", null);
-        enableRegeneration = this.config.getBoolean ("RegenerationAssist.enable", true);
-        originWorldName    = this.config.getString ("RegenerationAssist.origin_world_name", "origin");
+        isEnableWorldRepitiedCanceller = this.config.getBoolean("enable");
+        tpsThreshold                   = this.config.getDouble ("tps_threshold");
+        updateFrequency                = this.config.getInt    ("update_frequency");
+        startMessage                   = this.config.getString ("start_message", null);
+        endMessage                     = this.config.getString ("end_message", null);
+        cancelMessage                  = this.config.getString ("cancel_message", null);
+        enableRegeneration             = this.config.getBoolean("RegenerationAssist.enable", true);
+        originWorldName                = this.config.getString ("RegenerationAssist.origin_world_name", "origin");
+        doChunkLoadOririnalWorld       = this.config.getBoolean ("RegenerationAssist.chunk_load_original_world", false);
         this.reloadConfig();
         if (bukkitTask != null)
             if (!bukkitTask.isCancelled())
                 bukkitTask.cancel();
-        bukkitTask = new RiptideCancellerTask(this).runTaskTimer(this, updateFrequency, updateFrequency);
+        if (isEnableWorldRepitiedCanceller == true)
+            bukkitTask = new RiptideCancellerTask(this).runTaskTimer(this, updateFrequency, updateFrequency);
     }
 
     private int tpsTask (CommandSender sender, int cycle) {
@@ -294,11 +297,12 @@ public final class MamiyaSystemPlugin extends JavaPlugin {
     }
 
     private void displayInfo(CommandSender sender) {
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "- WorldRiptideCanceller -");
-        sender.sendMessage(ChatColor.WHITE + "SpigotAPIバージョン : " + getDescription().getAPIVersion());
-        sender.sendMessage(ChatColor.WHITE + "Pluginバージョン : " + getDescription().getVersion());
-        sender.sendMessage(ChatColor.RED + "ダウンロードURL : " + getSiteURL());
-        sender.sendMessage(ChatColor.DARK_BLUE + "Developed by rnlin(Twitter: @rnlin)");
+        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "- WorldRiptideCanceller" + " on MamiyaSystem" + " -");
+        sender.sendMessage(ChatColor.WHITE + "SpigotAPIバージョン: " + getDescription().getAPIVersion());
+        sender.sendMessage(ChatColor.WHITE + "Pluginバージョン: " + getDescription().getVersion());
+        sender.sendMessage(ChatColor.WHITE + "コマンド一覧: " + "/wrc commands");
+        sender.sendMessage("ダウンロードURL : " + ChatColor.BLUE + getSiteURL());
+        sender.sendMessage(ChatColor.GRAY + "Developed by rnlin(Twitter: @rnlin)");
         sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "--------");
     }
 
