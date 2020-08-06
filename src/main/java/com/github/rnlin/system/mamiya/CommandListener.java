@@ -45,10 +45,10 @@ public class CommandListener implements CommandExecutor {
     private WorldEditExceptionConverter exceptionConverter = null;
 
     public CommandListener(@NotNull MamiyaSystemPlugin plugin, @NotNull WorldEditPlugin we) {
-       this.plugin = plugin;
-       this.we = we;
-       this.editSessionManage = new EditSessionManage(we);
-       PlatformCommandManager pcm = we.getWorldEdit().getPlatformManager().getPlatformCommandManager();
+        this.plugin = plugin;
+        this.we = we;
+        this.editSessionManage = new EditSessionManage(we);
+        PlatformCommandManager pcm = we.getWorldEdit().getPlatformManager().getPlatformCommandManager();
         try {
             exceptionConverter = Reflection.<PlatformCommandManager, WorldEditExceptionConverter>getValue(pcm, "exceptionConverter");
         } catch (IllegalAccessException e) {
@@ -289,10 +289,29 @@ public class CommandListener implements CommandExecutor {
     }
 
     private EditSession removeEntity(EditSession editSession, Region region) {
-        for (Entity e : editSession.getEntities(region)) {
-            e.remove();
+        try {
+            for (Entity e : editSession.getEntities(region)) {
+                e.remove();
+                throw new UnsupportedOperationException();
+            }
+        } catch (Exception ex) {
+//System.out.println("Exception");
+            removeEntityReserve(editSession, region);
         }
          return editSession;
+    }
+
+    private void removeEntityReserve(EditSession editSession, Region region) {
+        BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+        ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
+                editSession, region, clipboard, region.getMinimumPoint()
+        );
+        forwardExtentCopy.setRemovingEntities(true);
+         try {
+             Operations.complete(forwardExtentCopy);
+         } catch (WorldEditException ex) {
+             ex.printStackTrace();
+         }
     }
 
     private BlockArrayClipboard copy(Region region, Player player, int maxBlock) {

@@ -4,7 +4,7 @@ version = version
 group = group
 //apply from: 'version.gradle'
 
-def pluginsPath = "G:\\minecraftserver\\Spigot1.16.1\\plugins"
+def pluginsPath = "G:\\minecraftserver\\Paper1.16.1\\plugins"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
