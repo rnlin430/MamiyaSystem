@@ -292,7 +292,6 @@ public class CommandListener implements CommandExecutor {
         try {
             for (Entity e : editSession.getEntities(region)) {
                 e.remove();
-                throw new UnsupportedOperationException();
             }
         } catch (Exception ex) {
 //System.out.println("Exception");

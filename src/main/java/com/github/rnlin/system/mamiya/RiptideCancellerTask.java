@@ -31,10 +31,9 @@ public class RiptideCancellerTask extends BukkitRunnable {
             }
         } else if(!isRestricted) {
             if (tps[0] > MamiyaSystemPlugin.tpsThreshold) {
-                if (MamiyaSystemPlugin.endMessage != null) {
+                if (MamiyaSystemPlugin.endMessage != null)
                     plugin.getServer().broadcastMessage(MamiyaSystemPlugin.endMessage);
-                    isRestricted = true;
-                }
+                isRestricted = true;
                 return;
             }
         }
